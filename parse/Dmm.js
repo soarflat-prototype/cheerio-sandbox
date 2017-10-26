@@ -13,7 +13,7 @@ class Dmm {
     this.$ = cheerio.load(html);
   }
 
-  async initPickup() {
+  initPickup() {
     const pickups = this.$('div', '.area-pickup .d-item td >');
     let pickup = {};
 
@@ -23,15 +23,15 @@ class Dmm {
       this.pickups.push(pickup);
     });
 
-    const setPickupsTitle = async () => {
-      for (let i = 0; i < this.pickups.length; i += 1) {
-        this.pickups[i].title = await this.getPickupTitle({ url: this.pickups[i].itemUrl });
-      }
-    };
-
-    setPickupsTitle()
+    this.initPickUpTitle()
       .then()
       .catch();
+  }
+
+  async initPickUpTitle() {
+    for (let i = 0; i < this.pickups.length; i += 1) {
+      this.pickups[i].title = await this.getPickupTitle({ url: this.pickups[i].itemUrl });
+    }
   }
 
   getPickupTitle({ url }) {
