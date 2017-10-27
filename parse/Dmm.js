@@ -27,8 +27,8 @@ class Dmm {
 
   getUrlsFromHref({ elements, selector }) {
     return elements.map((i, el) => {
-      const url = this.$(el).find(selector).attr('href');
-      return this.getFullUrl(url);
+      const path = this.$(el).find(selector).attr('href');
+      return this.getUrl(path);
     }).get();
   }
 
@@ -36,29 +36,34 @@ class Dmm {
     let pickupTitles = [];
 
     for (let i = 0; i < items.length; i += 1) {
-      const url = this.$(items[i]).find('> a').attr('href');
-      const itemUrl = this.getFullUrl(url);
-      const title = await this.getPickupTitle({ url: itemUrl });
+      const path = this.$(items[i]).find('> a').attr('href');
+      const itemUrl = this.getUrl(path);
+      const title = await this.fetchText({
+        url: itemUrl,
+        el: '#title'
+      });
       pickupTitles.push(title);
     }
 
     return pickupTitles;
   }
 
-  getPickupTitle({ url }) {
+  fetchText({ url, el }) {
     return new Promise(resolve => {
       request(url, (err, response, html) => {
-        if (err) console.error('err:', err);
-        console.log(`${url} statusCode:`, response && response.statusCode);
+        if (err) {
+          console.error('error:', err);
+        }
+
         const $ = cheerio.load(html);
-        const title = $('#title').text();
-        resolve(title);
+        const text = $(el).text();
+        resolve(text);
       });
     });
   }
 
-  getFullUrl(url) {
-    return this.url + url;
+  getUrl(path) {
+    return this.url + path;
   }
 }
 
