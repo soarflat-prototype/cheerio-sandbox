@@ -10,6 +10,11 @@
     "asyncawait": "^1.0.6",
     "cheerio": "^1.0.0-rc.2",
     "events": "^1.1.1",
+    "mongoose": "^4.11.12",
     "request": "^2.83.0"
+  },
+  "devDependencies": {
+    "foreman": "^2.0.0",
+    "nodemon": "^1.12.1"
   }
 }
