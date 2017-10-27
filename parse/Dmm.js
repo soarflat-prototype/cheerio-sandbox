@@ -14,21 +14,20 @@ class Dmm {
 
   async initPickups() {
     const items = this.$('div', '.area-pickup .d-item td >');
-    const itemUrls = this.getPickupItemUrls({ items: items });
-    const makerUrls = this.getMakerUrls({ items: items });
+    const itemUrls = this.getUrlsFromHref({
+      elements: items,
+      selector: '> a'
+    });
+    const makerUrls = this.getUrlsFromHref({
+      elements: items,
+      selector: '.tx-sublink > a'
+    });
     const titles = await this.getPickUpTitles({ items: items });
   }
 
-  getPickupItemUrls({ items }) {
-    return items.map((i, el) => {
-      const url = this.$(el).find('> a').attr('href');
-      return this.getFullUrl(url);
-    }).get();
-  }
-
-  getMakerUrls({ items }) {
-    return items.map((i, el) => {
-      const url = this.$(el).find('.tx-sublink > a').attr('href');
+  getUrlsFromHref({ elements, selector }) {
+    return elements.map((i, el) => {
+      const url = this.$(el).find(selector).attr('href');
       return this.getFullUrl(url);
     }).get();
   }
