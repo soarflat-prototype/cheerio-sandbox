@@ -2,7 +2,7 @@
   "name": "cheerio-sandbox",
   "version": "1.0.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon main.js"
   },
   "author": "",
   "license": "MIT",
