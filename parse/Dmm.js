@@ -1,7 +1,5 @@
 const request = require('request');
 const cheerio = require('cheerio');
-const async = require('asyncawait/async');
-const await = require('asyncawait/await');
 
 class Dmm {
   constructor() {
@@ -22,31 +20,25 @@ class Dmm {
   }
 
   getPickupItemUrls({ items }) {
-    let ItemUrls = [];
-    items.each((i, el) => {
-      const href = this.$(el).find('> a').attr('href');
-      const itemUrl = this.getFullUrl(href);
-      ItemUrls.push(itemUrl);
-    });
-    return ItemUrls;
+    return items.map((i, el) => {
+      const url = this.$(el).find('> a').attr('href');
+      return this.getFullUrl(url);
+    }).get();
   }
 
   getMakerUrls({ items }) {
-    let makerUrls = [];
-    items.each((i, el) => {
-      const href = this.$(el).find('.tx-sublink > a').attr('href');
-      const itemUrl = this.getFullUrl(href);
-      makerUrls.push(itemUrl);
-    });
-    return makerUrls;
+    return items.map((i, el) => {
+      const url = this.$(el).find('.tx-sublink > a').attr('href');
+      return this.getFullUrl(url);
+    }).get();
   }
 
   async getPickUpTitles({ items }) {
     let pickupTitles = [];
 
     for (let i = 0; i < items.length; i += 1) {
-      const href = this.$(items[i]).find('> a').attr('href');
-      const itemUrl = this.getFullUrl(href);
+      const url = this.$(items[i]).find('> a').attr('href');
+      const itemUrl = this.getFullUrl(url);
       const title = await this.getPickupTitle({ url: itemUrl });
       pickupTitles.push(title);
     }
