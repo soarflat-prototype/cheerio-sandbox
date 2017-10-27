@@ -6,7 +6,7 @@ const await = require('asyncawait/await');
 class Dmm {
   constructor() {
     this.$ = null;
-    this.url = 'http://www.dmm.co.jp/';
+    this.url = 'http://www.dmm.co.jp';
     this.pickups = [];
   }
 
@@ -14,24 +14,11 @@ class Dmm {
     this.$ = cheerio.load(html);
   }
 
-  initPickups() {
+  async initPickups() {
     const items = this.$('div', '.area-pickup .d-item td >');
     const itemUrls = this.getPickupItemUrls({ items: items });
     const makerUrls = this.getMakerUrls({ items: items });
-
-    let pickup = {};
-
-    // pickups.each((i, el) => {
-    //   pickup.itemUrl = this.getFullUrl(this.$(el).find('> a').attr('href'));
-    //   pickup.makerUrl = this.$(el).find('.tx-sublink > a').attr('href');
-    //   this.pickups.push(pickup);
-    // });
-    //
-    // this.getPickUpTitles()
-    //   .then(() => {
-    //     console.log('end');
-    //   })
-    //   .catch();
+    const titles = await this.getPickUpTitles({ items: items });
   }
 
   getPickupItemUrls({ items }) {
@@ -47,32 +34,40 @@ class Dmm {
   getMakerUrls({ items }) {
     let makerUrls = [];
     items.each((i, el) => {
-      const href = this.$(el).find('.tx-sublink > a').attr('href')
+      const href = this.$(el).find('.tx-sublink > a').attr('href');
       const itemUrl = this.getFullUrl(href);
       makerUrls.push(itemUrl);
     });
     return makerUrls;
   }
 
-  async getPickUpTitles() {
-    for (let i = 0; i < this.pickups.length; i += 1) {
-      this.pickups[i].title = await this.getPickupTitle({ url: this.pickups[i].itemUrl });
-    }
-  }
+  async getPickUpTitles({ items }) {
+    let pickupTitles = [];
 
-  getFullUrl(url) {
-    return this.url + url;
+    for (let i = 0; i < items.length; i += 1) {
+      const href = this.$(items[i]).find('> a').attr('href');
+      const itemUrl = this.getFullUrl(href);
+      const title = await this.getPickupTitle({ url: itemUrl });
+      pickupTitles.push(title);
+    }
+
+    return pickupTitles;
   }
 
   getPickupTitle({ url }) {
     return new Promise(resolve => {
-      request(url, (error, response, html) => {
-        console.log('error:', error);
-        console.log('statusCode:', response && response.statusCode);
+      request(url, (err, response, html) => {
+        if (err) console.error('err:', err);
+        console.log(`${url} statusCode:`, response && response.statusCode);
         const $ = cheerio.load(html);
-        resolve('dom');
+        const title = $('#title').text();
+        resolve(title);
       });
     });
+  }
+
+  getFullUrl(url) {
+    return this.url + url;
   }
 }
 
