@@ -12,6 +12,6 @@ request('http://www.dmm.co.jp/digital/', (error, response, html) => {
 });
 
 emitter.on('requestDmmDigital', (html) => {
-  dmmParser.setHtml(html);
+  dmmParser.loadHtml(html);
   dmmParser.initPickups();
 });

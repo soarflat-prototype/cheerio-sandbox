@@ -2,53 +2,71 @@ const request = require('request');
 const cheerio = require('cheerio');
 
 class Dmm {
+
   constructor() {
     this.$ = null;
     this.url = 'http://www.dmm.co.jp';
     this.pickups = [];
   }
 
-  setHtml(html) {
+  loadHtml(html) {
     this.$ = cheerio.load(html);
   }
 
   async initPickups() {
     const items = this.$('div', '.area-pickup .d-item td >');
-    const itemUrls = this.getUrlsFromHref({
-      elements: items,
-      selector: '> a'
+    const itemUrls = this.getUrlsFromHref({ elements: this.$(items).find('> a') });
+    const makerUrls = this.getUrlsFromHref({ elements: this.$(items).find('.tx-sublink > a') });
+    const titles = await this.fetchTextsFromRequestHtml({
+      elements: this.$(items).find('> a'),
+      textSelector: '#title'
     });
-    const makerUrls = this.getUrlsFromHref({
-      elements: items,
-      selector: '.tx-sublink > a'
-    });
-    const titles = await this.getPickUpTitles({ items: items });
   }
 
-  getUrlsFromHref({ elements, selector }) {
+  /**
+   * href属性からリンクを取得し、絶対パスのURLに変換して返す
+   *
+   * @param elements hrefからリンクを取得した要素
+   * @returns Array
+   */
+  getUrlsFromHref({ elements }) {
     return elements.map((i, el) => {
-      const path = this.$(el).find(selector).attr('href');
+      const path = this.$(el).attr('href');
       return this.getUrl(path);
     }).get();
   }
 
-  async getPickUpTitles({ items }) {
-    let pickupTitles = [];
+  /**
+   * href属性のリンクをリクエストし、返ってきたHTMLからテキストを取得する
+   *
+   * @param elements hrefからリンクを取得したい要素
+   * @param textSelector テキストを取得したいセレクタ
+   * @returns {Promise.<Array>}
+   */
+  async fetchTextsFromRequestHtml({ elements, textSelector }) {
+    let texts = [];
 
-    for (let i = 0; i < items.length; i += 1) {
-      const path = this.$(items[i]).find('> a').attr('href');
+    for (let i = 0; i < elements.length; i += 1) {
+      const path = this.$(elements[i]).attr('href');
       const itemUrl = this.getUrl(path);
-      const title = await this.fetchText({
+      const text = await this.fetchText({
         url: itemUrl,
-        el: '#title'
+        textSelector: textSelector
       });
-      pickupTitles.push(title);
+      texts.push(text);
     }
 
-    return pickupTitles;
+    return texts;
   }
 
-  fetchText({ url, el }) {
+  /**
+   * urlをリクエストして、返ってきたHTMLからテキストを取得する
+   *
+   * @param url リクエストするurl
+   * @param textSelector テキストを取得したいセレクタ
+   * @returns {Promise}
+   */
+  fetchText({ url, textSelector }) {
     return new Promise(resolve => {
       request(url, (err, response, html) => {
         if (err) {
@@ -56,15 +74,21 @@ class Dmm {
         }
 
         const $ = cheerio.load(html);
-        const text = $(el).text();
+        const text = $(textSelector).text();
         resolve(text);
       });
     });
   }
 
+  /**
+   *
+   * @param path
+   * @returns {string}
+   */
   getUrl(path) {
     return this.url + path;
   }
+
 }
 
 module.exports = Dmm;
