@@ -21,6 +21,8 @@ class Dmm {
       elements: this.$(items).find('> a'),
       textSelector: '#title'
     });
+
+    console.log(titles);
   }
 
   /**
@@ -32,7 +34,7 @@ class Dmm {
   getUrlsFromHref({ elements }) {
     return elements.map((i, el) => {
       const path = this.$(el).attr('href');
-      return this.getUrl(path);
+      return this.joinUrl(path);
     }).get();
   }
 
@@ -48,7 +50,7 @@ class Dmm {
 
     for (let i = 0; i < elements.length; i += 1) {
       const path = this.$(elements[i]).attr('href');
-      const itemUrl = this.getUrl(path);
+      const itemUrl = this.joinUrl(path);
       const text = await this.fetchText({
         url: itemUrl,
         textSelector: textSelector
@@ -81,11 +83,12 @@ class Dmm {
   }
 
   /**
+   * ルートURLにパスを結合して返す
    *
    * @param path
    * @returns {string}
    */
-  getUrl(path) {
+  joinUrl(path) {
     return this.url + path;
   }
 
